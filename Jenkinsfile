@@ -93,7 +93,7 @@ pipeline{
                     sh "${mvnCmd} deploy"
 
                     // Move artifacts to Artifactory repository
-                    sh "jfrog rt mv target/*.jar my-repository/ --url=${ARTIFACTORY_URL} --user=${username} --password=${password}"
+                    sh "jfrog rt mv target/*.jar example-repo-local/ --url=${ARTIFACTORY_URL} --user=${username} --password=${password}"
 
                     // Add build dependencies to build info
                     sh "${buildInfoCmd}"
