@@ -4,6 +4,9 @@ pipeline{
 
     agent any
     //agent { label 'Demo' }
+     environment {
+        ARTIFACTORY_URL = 'http://13.233.81.15:8082/artifactory'
+    }
 
     parameters{
 
@@ -74,7 +77,29 @@ pipeline{
                }
             }
         }
-        
+        stage('Publish to Artifactory') {
+            steps {
+                script {
+                    def mvnCmd = 'mvn'
+                    def artifactoryCliCmd = 'jfrog rt mv'
+                    def buildInfoCmd = 'jfrog rt build-add-dependencies --build-name=my-build --build-number=1'
+                    def credentialsId = 'artifactory-credentials'
+
+                    // Retrieve Artifactory username and password from Jenkins credentials
+                    def username = credentials(credentialsId).username
+                    def password = credentials(credentialsId).password
+
+                    // Deploy artifacts to Artifactory
+                    sh "${mvnCmd} deploy"
+
+                    // Move artifacts to Artifactory repository
+                    sh "jfrog rt mv target/*.jar my-repository/ --url=${ARTIFACTORY_URL} --user=${username} --password=${password}"
+
+                    // Add build dependencies to build info
+                    sh "${buildInfoCmd}"
+                }
+            }
+        }
         stage('Docker Image Build'){
          when { expression {  params.action == 'create' } }
             steps{
